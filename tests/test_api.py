@@ -1,19 +1,30 @@
-from fastapi.testclient import TestClient
+"""Legacy integration tests using AAA pattern."""
 
-from src.app import app
-
-client = TestClient(app)
+import pytest
 
 
-def test_unregister_participant_from_activity():
-    activity_name = "Chess Club"
-    email = "michael@mergington.edu"
+class TestAPIIntegration:
+    """Integration tests for API endpoints."""
 
-    response = client.delete(
-        f"/activities/{activity_name}/participants",
-        params={"email": email},
-    )
+    def test_unregister_participant_from_activity(self, client):
+        """
+        AAA Test: Verify unregister endpoint removes participant correctly.
+        Arrange: Select existing participant from Chess Club
+        Act: DELETE request to unregister participant
+        Assert: Status 200, participant removed, confirmation message
+        """
+        # Arrange
+        activity_name = "Chess Club"
+        email = "michael@mergington.edu"
 
-    assert response.status_code == 200
-    assert email not in response.json()["participants"]
-    assert "michael@mergington.edu" in response.json()["message"]
+        # Act
+        response = client.delete(
+            f"/activities/{activity_name}/participants",
+            params={"email": email},
+        )
+
+        # Assert
+        assert response.status_code == 200
+        result = response.json()
+        assert email not in result["participants"]
+        assert email in result["message"]
